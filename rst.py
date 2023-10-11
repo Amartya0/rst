@@ -120,10 +120,7 @@ def upperApproximation(eqvClasses, targetSet):
     return upperApprox
 
 
-def rst(dataSet, noOfAttributes, targetSet):
-    eqvClassesSet = eqvClasses(indiscernibility(dataSet, noOfAttributes))
-    print("------------------------------------------------Equivalent Classes------------------------------------------------\n",
-          eqvClassesSet, end='\n\n')
+def rst(eqvClassesSet, targetSet):
     lowerApproximationSet = lowerApproximation(eqvClassesSet, targetSet)
     upperApproximationSet = upperApproximation(eqvClassesSet, targetSet)
     return lowerApproximationSet, upperApproximationSet
@@ -141,23 +138,31 @@ def sample_with_minimum_distance(n, k, d):
     return [s + (d-1)*r for s, r in zip(sample, ranks(sample))]
 
 
-n = 10
+n = 15
 a = 5
 dataSet = rstDataGenerator(n, a, 2)
-
+# print the dataset separating each element with tab
+print("------------------------------------------------Dataset------------------------------------------------\n", dataSet)
 attributeSetIndex = sorted(
-    sample_with_minimum_distance(a+1, random.randint(1, a), 1))
+    sample_with_minimum_distance(a, random.randint(1, a-1), 1))
 
 attributeSet = []
 for i in range(len(attributeSetIndex)):
     attributeSet.append(dataSet[0][attributeSetIndex[i]])
 
-
-targetSet = list(map(str, sorted(map(int, (np.random.choice(
-    dataSet[1:, 0], random.randint(1, n), replace=False))))))
-
-print("------------------------------------------------Dataset------------------------------------------------\n", dataSet)
 print("------------------------------------------------Attribute Set------------------------------------------------\n", attributeSet)
-print("------------------------------------------------Target Set------------------------------------------------\n", targetSet)
-print("------------------------------------------------RST------------------------------------------------\n",
-      rst(dataSet, attributeSet, targetSet))
+
+eqvClassesSet = eqvClasses(indiscernibility(dataSet, attributeSet))
+print("------------------------------------------------Equivalent Classes------------------------------------------------\n", eqvClassesSet)
+
+for i in range(3):
+
+    targetSet = list(map(str, sorted(map(int, (np.random.choice(
+        dataSet[1:, 0], random.randint(1, n), replace=False))))))
+    print("------------------------------------------------", i +
+          1, "------------------------------------------------")
+    print("------------------------------------------------Target Set------------------------------------------------\n", targetSet)
+    print("------------------------------------------------RST------------------------------------------------\n",
+          rst(eqvClassesSet, targetSet))
+
+print("------------------------------------------------End------------------------------------------------")
