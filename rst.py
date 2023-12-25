@@ -1,11 +1,15 @@
 import numpy as np
+import pandas as pd
 import random
 
 
 # A function that take number of objects n, number of attributes a, and number of classes d and generate a random dataset
 def rstDataGenerator(n, a, d):
-    # give each attribute a random value between 1 and 4 (including 1 but not 4)
-    dataSet = np.random.randint(1, 4, size=(n, a))
+    # give each attribute a random value between 1 and 4 (including 1 but not 3)
+    dataSet = np.random.randint(1, 3, size=(n, 1))
+    for _ in range(1, a):
+        dataSet = np.append(dataSet, np.random.randint(
+            1, a+2, size=(n, 1)), axis=1)
     # assign each object a random class of d classes
     classes = np.random.randint(1, d+1, size=(n, 1))
     dataSet = np.append(dataSet, classes, axis=1)
@@ -126,6 +130,113 @@ def rst(eqvClassesSet, targetSet):
     return lowerApproximationSet, upperApproximationSet
 
 
+# a function that calculates the dependency of attributeSet2(q) on attributeSet1(p) given input dataset equivalent classes of attributeSet1 and attributeSet2
+def attributeDependency(dataSet, equivalenceClassesSet1, equivalenceClassesSet2):
+    # get the total number of objects in the dataset
+    totalObjects = len(dataSet)-1
+
+    # calculate the sum of lower application of each equivalent class of the indecernibility relation of the attribute set 2 for the attribute set 1
+    sumLowerApprox = 0
+    for i in equivalenceClassesSet2:
+        sumLowerApprox += len(lowerApproximation(equivalenceClassesSet1, i))
+
+    # return the dependency of attributeSet2(q) on attributeSet1(p) round of to 6 decimal places
+    return round(sumLowerApprox/totalObjects, 6)
+
+#
+
+
+def discernibilityMatrix(dataset):
+    # get all the attributes
+    attributes = dataset[0][1:-1]
+    # randomly select one object
+    object = random.choice(dataset[1:])
+    # delete all the objects with same class as the selected object
+    dataset = np.delete(dataset, np.where(
+        dataset[:, -1] == object[-1]), axis=0)
+    # initialize a frequency dictionary of each attribute as key and 0 as value
+    attributeFrequency = {}
+    for _ in attributes:
+        attributeFrequency[_] = 0
+
+    core = []
+    # discernMatrix = []
+    # for each object in the dataset, if the value of an attribute is different from the selected object, increment the frequency of that attribute
+    for i in dataset[1:]:
+        count = 0
+        coreIndex = 0
+        # temp = []
+        for j in range(len(attributes)):
+
+            if i[j+1] != object[j+1]:
+                attributeFrequency[attributes[j]] += 1
+                count += 1
+                coreIndex = j
+                # temp.append(attributes[j])
+        # discernMatrix.append(temp)
+        if count == 1:
+            if attributes[coreIndex] not in core:
+                core.append(attributes[coreIndex])
+
+    # delete the attributes from attributeFrequency that are already in the reduct
+    for i in core:
+        if i in attributeFrequency:
+            del attributeFrequency[i]
+
+    # sort the attributeFrequency dictionary by values in descending order
+    attributeFrequency = {k: v for k, v in sorted(
+        attributeFrequency.items(), key=lambda item: item[1], reverse=True)}
+
+    return list(sorted(core)), list(attributeFrequency.keys())
+
+    # print(type(core), type(attributeFrequency.keys()))
+
+
+def reduct(dataSet):
+    attributes = list(dataSet[0][1:-1])
+    reductSet, attributeFrequency = discernibilityMatrix(dataSet)
+
+    temp = (attributeDependency(dataSet, eqvClasses(indiscernibility(
+        dataSet, reductSet)), eqvClasses(indiscernibility(dataSet, attributes))))
+    if int(temp) == 1:
+        return reductSet
+    else:
+        for i in attributeFrequency:
+            reductSet.append(i)
+            temp = (attributeDependency(dataSet, eqvClasses(indiscernibility(
+                dataSet, reductSet)), eqvClasses(indiscernibility(dataSet, attributes))))
+            if int(temp) == 1:
+                return sorted(list(reductSet))
+
+    return sorted(list(reductSet))
+
+# a function that takes in a dataset and returns the horizontally reduced dataset
+
+
+def horizontalReduct(dataSet):
+    reductSet = reduct(dataSet)
+    # delete the attributes from the dataset that are not in the reduct
+    deleteIndex = []
+    for i in range(len(dataSet[0])-2):
+        if dataSet[0][i+1] not in reductSet:
+            deleteIndex.append(i+1)
+
+    # print(reductSet, deleteIndex)
+    dataSet = np.delete(dataSet, deleteIndex, axis=1)
+    return dataSet
+
+
+# a function that takes in a dataset and returns the vertically reduced dataset
+def verticalReduct(dataset):
+    # delete any two objects with same attributes and class values
+    for i in range(len(dataset)-1):
+        for j in range(i+1, len(dataset)-1):
+            if np.array_equal(dataset[i][1:], dataset[j][1:]):
+                dataset = np.delete(dataset, j, axis=0)
+
+    return dataset
+
+
 def ranks(sample):
     # Return the ranks of each element in an integer sample.
     indices = sorted(range(len(sample)), key=lambda i: sample[i])
@@ -138,31 +249,29 @@ def sample_with_minimum_distance(n, k, d):
     return [s + (d-1)*r for s, r in zip(sample, ranks(sample))]
 
 
-n = 15
-a = 5
+n = 10
+a = 4
 dataSet = rstDataGenerator(n, a, 2)
-# print the dataset separating each element with tab
-print("------------------------------------------------Dataset------------------------------------------------\n", dataSet)
-attributeSetIndex = sorted(
-    sample_with_minimum_distance(a, random.randint(1, a-1), 1))
 
-attributeSet = []
-for i in range(len(attributeSetIndex)):
-    attributeSet.append(dataSet[0][attributeSetIndex[i]])
+# attributeSetIndex = sorted(
+#     sample_with_minimum_distance(a, random.randint(1, a-1), 1))
+# attributeSet = []
+# for i in range(len(attributeSetIndex)):
+#     attributeSet.append(dataSet[0][attributeSetIndex[i]])
 
-print("------------------------------------------------Attribute Set------------------------------------------------\n", attributeSet)
+# print("------------------------------------------------Attribute Set------------------------------------------------\n", attributeSet)
 
-eqvClassesSet = eqvClasses(indiscernibility(dataSet, attributeSet))
-print("------------------------------------------------Equivalent Classes------------------------------------------------\n", eqvClassesSet)
+# eqvClassesSet = eqvClasses(indiscernibility(dataSet, attributeSet))
+# print("------------------------------------------------Equivalent Classes------------------------------------------------\n", eqvClassesSet)
 
-for i in range(3):
+# for i in range(1):
 
-    targetSet = list(map(str, sorted(map(int, (np.random.choice(
-        dataSet[1:, 0], random.randint(1, n), replace=False))))))
-    print("------------------------------------------------", i +
-          1, "------------------------------------------------")
-    print("------------------------------------------------Target Set------------------------------------------------\n", targetSet)
-    print("------------------------------------------------RST------------------------------------------------\n",
-          rst(eqvClassesSet, targetSet))
+#     targetSet = list(map(str, sorted(map(int, (np.random.choice(
+#         dataSet[1:, 0], random.randint(1, n), replace=False))))))
+#     print("------------------------------------------------", i +
+#             1, "------------------------------------------------")
+#     print("------------------------------------------------Target Set------------------------------------------------\n", targetSet)
+#     print("------------------------------------------------RST------------------------------------------------\n",
+#             rst(eqvClassesSet, targetSet))
 
-print("------------------------------------------------End------------------------------------------------")
+# print("------------------------------------------------End------------------------------------------------")
