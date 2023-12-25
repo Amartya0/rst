@@ -63,7 +63,7 @@ for train_index, test_index in kf.split(X):
     f1_scores.append(f1)
 
     # Visualize Decision Tree for each fold
-    plt.figure(figsize=(12, 8))
+    plt.figure(figsize=(32, 18))
     plot_tree(classifier, filled=True, feature_names=feature_names,
               class_names=breast_cancer.target_names)
     plt.title(f'Decision Tree - Fold {fold}')

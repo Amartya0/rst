@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 
 # Generate synthetic dataset
 np.random.seed(42)
-num_objects = 100
+num_objects = 20
 num_features = 3
-data = np.random.randint(0, 2, size=(num_objects, num_features))
+data = np.random.randint(0, 3, size=(num_objects, num_features))
 # Binary classification labels
 labels = np.random.randint(0, 2, size=num_objects)
 
@@ -19,7 +19,7 @@ data_df['Target'] = labels
 
 # Display the dataset in a table form
 print("Dataset:")
-print(data_df.head())
+print(data_df)
 
 # Initialize k-fold cross-validation
 num_splits = 5

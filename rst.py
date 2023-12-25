@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import random
 
 
@@ -249,9 +248,9 @@ def sample_with_minimum_distance(n, k, d):
     return [s + (d-1)*r for s, r in zip(sample, ranks(sample))]
 
 
-n = 10
-a = 4
-dataSet = rstDataGenerator(n, a, 2)
+# n = 10
+# a = 4
+# dataSet = rstDataGenerator(n, a, 2)
 
 # attributeSetIndex = sorted(
 #     sample_with_minimum_distance(a, random.randint(1, a-1), 1))
